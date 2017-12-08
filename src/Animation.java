@@ -1,6 +1,9 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.Line2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 import static java.lang.StrictMath.ceil;
 
@@ -8,6 +11,9 @@ class Animation extends JPanel {
 
     private int size;
     ControlPoint animatedPoints[][];
+    BufferedImage srcImg = null, destImg = null;
+    Triangle triangles[][][];
+    private Morph morph = new Morph();
 
     Animation(ControlPoint start[][], ControlPoint end[][], double t, int size){
 
@@ -21,8 +27,9 @@ class Animation extends JPanel {
     ControlPoint[][] animate(ControlPoint start[][], ControlPoint end[][], double t, int size){
 
         // Set the size and create a new array of where the new control points should move, create a new
-        // array each time the function is called
+        // array each time the function is called, create triangles array of the same size
         this.animatedPoints = new ControlPoint[size + 1][size + 1];
+        triangles = new Triangle[size + 1][size + 1][2];
 
         // Run through the length of the starting array in both directions
         for (int i = 0; i < start.length; i++) {
@@ -46,34 +53,46 @@ class Animation extends JPanel {
             }
         }
 
+        // Define all triangles
+        for(int i = 0; i < this.size; i++) {
+            for(int j = 0; j < this.size; j++) {
+                triangles[i][j][0] = new Triangle(animatedPoints[i][j], animatedPoints[i + 1][j], animatedPoints[i + 1][j + 1]);
+                triangles[i][j][1] = new Triangle(animatedPoints[i][j], animatedPoints[i][j + 1], animatedPoints[i + 1][j + 1]);
+            }
+        }
+
         return animatedPoints;
     }
 
-    public void paintComponent(Graphics g){
+    public void paintComponent(Graphics g) {
 
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D)g;
 
-        for (int i = 0; i < size + 1; i++){
-            for (int j = 0; j < size + 1; j++){
+        if (srcImg != null && destImg != null) {
 
-                // Draw new points each time the Animation class is called
-                g2d.fill(animatedPoints[i][j]);
+            // PUT IN TRY ???? Except IllegalArgumentException
+            g2d.setComposite(morph.ac1);
+            g2d.drawImage(srcImg, 0, 0, null);
 
-                // Draw the new lines as animation is happening
-                if ((i + 1) < (size + 1) && (j + 1) < (size + 1)){
-                    g2d.draw(new Line2D.Double(animatedPoints[i][j].x + 5, animatedPoints[i][j].y + 5,
-                            animatedPoints[i+1][j+1].x + 5, animatedPoints[i+1][j+1].y + 5));
-                }
-                if ((j + 1) < (size + 1)){
-                    g2d.draw(new Line2D.Double(animatedPoints[i][j].x + 5, animatedPoints[i][j].y + 5,
-                            animatedPoints[i][j+1].x + 5, animatedPoints[i][j+1].y + 5));
-                }
-                if ((i + 1) < (size + 1)){
-                    g2d.draw(new Line2D.Double(animatedPoints[i][j].x + 5, animatedPoints[i][j].y + 5,
-                            animatedPoints[i+1][j].x + 5, animatedPoints[i+1][j].y + 5));
-                }
-            }
+            g2d.setComposite(morph.ac2);
+            g2d.drawImage(destImg, 0, 0, null);
         }
+    }
+
+    // Set the image on each lattice
+    void setImage(String image1, String image2){
+
+        // Read the image and repaint the jpanel if it is successful
+        try {
+
+            // Create two images for animation. Start and end
+            srcImg = ImageIO.read(new File(image1));
+            destImg = ImageIO.read(new File(image2));
+
+            super.removeAll();
+            super.revalidate();
+            super.repaint();
+        }catch (IOException | NullPointerException e){ System.out.println("error"); }
     }
 }

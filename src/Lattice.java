@@ -15,7 +15,10 @@ class Lattice extends JPanel implements MouseMotionListener, MouseListener{
     private int size;
     private boolean draggingControlPoint = false;
     private int pointI, pointJ;
-    private BufferedImage img = null;
+    BufferedImage img = null;
+    /* * * * * * */
+    Triangle triangles[][][];
+    /* * * * * * */
 
     Lattice(int size){
 
@@ -31,9 +34,12 @@ class Lattice extends JPanel implements MouseMotionListener, MouseListener{
         // Initialize the points array
         points = new ControlPoint[size + 1][size + 1];
 
+        /* * * * * * */
+        triangles = new Triangle[size + 1][size + 1][2];
+
         // Run through the size of what is being requested
-        for (int i = 0; i < size + 1; i++){
-            for (int j = 0; j < size + 1; j++){
+        for (int i = 0; i < size + 1; i++) {
+            for (int j = 0; j < size + 1; j++) {
 
                 // Calculate the x and y value for where each point should go
                 double x = (i * 500) / size;
@@ -44,6 +50,14 @@ class Lattice extends JPanel implements MouseMotionListener, MouseListener{
                 points[i][j] = controlPoint;
             }
         }
+
+        for(int i = 0; i < this.size; i++) {
+            for(int j = 0; j < this.size; j++) {
+                triangles[i][j][0] = new Triangle(points[i][j], points[i + 1][j], points[i + 1][j + 1]);
+                triangles[i][j][1] = new Triangle(points[i][j], points[i][j + 1], points[i + 1][j + 1]);
+            }
+        }
+                /* * * * * * */
     }
 
     public void paintComponent(Graphics g){
@@ -119,6 +133,13 @@ class Lattice extends JPanel implements MouseMotionListener, MouseListener{
 
         // When the mouse is released, set dragging control point boolean to false
         draggingControlPoint = false;
+
+        for(int i = 0; i < this.size - 1; i++) {
+            for(int j = 0; j < this.size - 1; j++) {
+                triangles[i][j][0] = new Triangle(points[i][j], points[i + 1][j], points[i + 1][j + 1]);
+                triangles[i][j][1] = new Triangle(points[i][j], points[i][j + 1], points[i + 1][j + 1]);
+            }
+        }
     }
 
     @Override

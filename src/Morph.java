@@ -17,7 +17,12 @@ public class Morph extends JFrame implements ActionListener{
     private int size;
     private Timer animateTimer;
     private boolean same;
-    private double t = 0.001;
+    private double t = 0;
+    private MorphTools morphTool = new MorphTools();
+    private JFileChooser file1, file2;
+    static AlphaComposite ac1, ac2;
+
+    Morph(){}
 
     private Morph(int size){
 
@@ -47,10 +52,9 @@ public class Morph extends JFrame implements ActionListener{
 
         // Create File tab
         JMenu fileMenu = new JMenu("File");
-        fileMenu.setMnemonic('F');
 
-        JFileChooser file1 = new JFileChooser();
-        JFileChooser file2 = new JFileChooser();
+        file1 = new JFileChooser();
+        file2 = new JFileChooser();
 
         FileNameExtensionFilter filters = new FileNameExtensionFilter("JPEG/JPG, PNG", "jpg", "jpeg", "png");
         file1.setFileFilter(filters);
@@ -78,29 +82,28 @@ public class Morph extends JFrame implements ActionListener{
         fileMenu.addSeparator();
 
         JMenuItem exitMorph = new JMenuItem("Exit");
-        exitMorph.setMnemonic('X');
         exitMorph.addActionListener(this);
         fileMenu.add(exitMorph);
 
         JMenu morph = new JMenu("Morph");
-        fileMenu.setMnemonic('M');
 
         JMenuItem newMorph = new JMenuItem("Start Morph");
-        newMorph.setMnemonic('S');
         newMorph.addActionListener(this);
         morph.add(newMorph);
 
         morph.addSeparator();
 
-        JMenuItem increaseSize = new JMenuItem("Increase Size");
-        increaseSize.setMnemonic('+');
-        increaseSize.addActionListener(this);
-        morph.add(increaseSize);
+        JMenuItem fiveByFive = new JMenuItem("5x5");
+        fiveByFive.addActionListener(this);
+        morph.add(fiveByFive);
 
-        JMenuItem decreaseSize = new JMenuItem("Decrease Size");
-        decreaseSize.setMnemonic('-');
-        decreaseSize.addActionListener(this);
-        morph.add(decreaseSize);
+        JMenuItem tenByTen = new JMenuItem("10x10");
+        tenByTen.addActionListener(this);
+        morph.add(tenByTen);
+
+        JMenuItem twentyByTwenty = new JMenuItem("20x20");
+        twentyByTwenty.addActionListener(this);
+        morph.add(twentyByTwenty);
 
         bar.add(fileMenu);
         bar.add(morph);
@@ -112,33 +115,42 @@ public class Morph extends JFrame implements ActionListener{
         if (e.getActionCommand().equals("Exit")) { System.exit(0); }
         else if (e.getActionCommand().equals("Start Morph")) { showAnimateFrame(); }
 
-        else if (e.getActionCommand().equals("Increase Size")){
+        // Create a new 5x5 grid
+        else if (e.getActionCommand().equals("5x5")){
 
-            // If the size is 10 or bigger, increase by 5 when the increase button is clicked
-            if (size >= 10) {
-                dispose();
-                size += 5;
+            dispose();
+            size = 5;
 
-                Morph M = new Morph(size);
-                M.addWindowListener(new WindowAdapter() {
-                    public void windowClosing(WindowEvent e) {
-                        System.exit(0);
+            Morph M = new Morph(size);
+            M.addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent e) {
+                    System.exit(0);
                     }
                 });
-            }
         }
-        else if (e.getActionCommand().equals("Decrease Size")){
 
-            // If the size is greater than 15 then decrease the size by 5
-            if (size >= 15) {
-                dispose();
-                size -= 5;
+        // Create a new 10x10 grid
+        else if (e.getActionCommand().equals("10x10")){
 
-                Morph M = new Morph(size);
-                M.addWindowListener(new WindowAdapter(){
+            dispose();
+            size = 10;
+
+            Morph M = new Morph(size);
+            M.addWindowListener(new WindowAdapter(){
                     public void windowClosing(WindowEvent e){System.exit(0);}
                 });
-            }
+        }
+
+        // Create a new 20x20 grid
+        else if (e.getActionCommand().equals("20x20")){
+
+            dispose();
+            size = 20;
+
+            Morph M = new Morph(size);
+            M.addWindowListener(new WindowAdapter(){
+                public void windowClosing(WindowEvent e){System.exit(0);}
+            });
         }
     }
 
@@ -146,9 +158,8 @@ public class Morph extends JFrame implements ActionListener{
 
         // Create a timer and name the animation frame
         JFrame animateFrame = new JFrame("Animation");
-
-        // Start the animation
         Animation animate = new Animation(startLattice.points, endLattice.points, t, size);
+        animate.setImage(file1.getSelectedFile().getPath(), file2.getSelectedFile().getPath());
 
         // Start an action listener for the timer to show the animation
         ActionListener showAnimation = e -> {
@@ -160,7 +171,7 @@ public class Morph extends JFrame implements ActionListener{
                 for (int j = 0; j < size; j++){
 
                     // Check if the x and y points of the animating frame match the end frame
-                    // if they dont equal then set the boolean to false
+                    // if they don't equal then set the boolean to false
                     if (!(animate.animatedPoints[i][j].x == endLattice.points[i][j].x &&
                             animate.animatedPoints[i][j].y == endLattice.points[i][j].y)){
 
@@ -174,14 +185,32 @@ public class Morph extends JFrame implements ActionListener{
             if (same){
                 animateTimer.stop();
             }else{
-                t += 0.005;
+                t += 0.006;
                 animate.animatedPoints = animate.animate(animate.animatedPoints, endLattice.points, t, size);
+
+                for(int i = 0; i < this.size; i++) {
+                    for(int j = 0; j < this.size; j++) {
+                        morphTool.warpTriangle(startLattice.img, animate.srcImg, startLattice.triangles[i][j][0], animate.triangles[i][j][0], null, null);
+                        morphTool.warpTriangle(startLattice.img, animate.srcImg, startLattice.triangles[i][j][1], animate.triangles[i][j][1], null, null);
+
+                        morphTool.warpTriangle(endLattice.img, animate.destImg, endLattice.triangles[i][j][0], animate.triangles[i][j][0], null, null);
+                        morphTool.warpTriangle(endLattice.img, animate.destImg, endLattice.triangles[i][j][1], animate.triangles[i][j][1], null, null);
+
+                        if (t >= 1) t = 1;
+
+                        animate.srcImg.createGraphics();
+                        ac1 = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float)(1 - t));
+
+                        animate.destImg.createGraphics();
+                        ac2 = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float)(t));
+                    }
+                }
             }
 
             // Repaint the Panel
             animate.revalidate();
             animate.repaint();
-    };
+        };
 
         // Create timer and start it
         animateTimer = new Timer(33, showAnimation);
@@ -190,7 +219,7 @@ public class Morph extends JFrame implements ActionListener{
 
         // Create animation frame
         animateFrame.add(animate);
-        animateFrame.setSize(500, 500);
+        animateFrame.setSize(endLattice.img.getWidth(), endLattice.img.getHeight());
         animateFrame.setVisible(true);
     }
 
