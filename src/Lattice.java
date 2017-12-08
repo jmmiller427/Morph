@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
 
@@ -11,20 +12,19 @@ class Lattice extends JPanel implements MouseMotionListener, MouseListener{
 
     // Create a single point and an array of points
     private ControlPoint controlPoint;
-    ControlPoint points[][];
     private int size;
     private boolean draggingControlPoint = false;
     private int pointI, pointJ;
+    private BufferedImage filteredImg = null;
     BufferedImage img = null;
-    /* * * * * * */
     Triangle triangles[][][];
-    /* * * * * * */
+    ControlPoint points[][];
 
     Lattice(int size){
 
         // Set the size, panel size, and border of the lattice panel
         this.size = size;
-        super.setPreferredSize(new Dimension(500, 500));
+        super.setPreferredSize(new Dimension(510, 500));
         super.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLACK));
 
         // Add mouse listeners to the panel
@@ -33,8 +33,6 @@ class Lattice extends JPanel implements MouseMotionListener, MouseListener{
 
         // Initialize the points array
         points = new ControlPoint[size + 1][size + 1];
-
-        /* * * * * * */
         triangles = new Triangle[size + 1][size + 1][2];
 
         // Run through the size of what is being requested
@@ -51,13 +49,13 @@ class Lattice extends JPanel implements MouseMotionListener, MouseListener{
             }
         }
 
+        // For loop to create each triangle for each square
         for(int i = 0; i < this.size; i++) {
             for(int j = 0; j < this.size; j++) {
                 triangles[i][j][0] = new Triangle(points[i][j], points[i + 1][j], points[i + 1][j + 1]);
                 triangles[i][j][1] = new Triangle(points[i][j], points[i][j + 1], points[i + 1][j + 1]);
             }
         }
-                /* * * * * * */
     }
 
     public void paintComponent(Graphics g){
@@ -98,10 +96,7 @@ class Lattice extends JPanel implements MouseMotionListener, MouseListener{
         // Read the image and repaint the jpanel if it is successful
         try {
             img = ImageIO.read(new File(image));
-
-//            int width = img.getWidth();
-//            int height = img.getHeight();
-//            int[][] result = new int[width][height];
+            filteredImg = img;
 
             super.removeAll();
             super.revalidate();
@@ -109,6 +104,13 @@ class Lattice extends JPanel implements MouseMotionListener, MouseListener{
         }catch (IOException | NullPointerException e){ System.out.println("Error"); }
     }
 
+    void setBrightness(float brightness){
+
+        // Pass in a brightness value to adjust the brightness of the image
+        RescaleOp op = new RescaleOp(brightness, 0, null);
+        img = op.filter(filteredImg, null);
+        repaint();
+    }
 
     @Override
     public void mousePressed(MouseEvent e) {
@@ -134,6 +136,7 @@ class Lattice extends JPanel implements MouseMotionListener, MouseListener{
         // When the mouse is released, set dragging control point boolean to false
         draggingControlPoint = false;
 
+        // When the mouse is released, create all new triangles
         for(int i = 0; i < this.size - 1; i++) {
             for(int j = 0; j < this.size - 1; j++) {
                 triangles[i][j][0] = new Triangle(points[i][j], points[i + 1][j], points[i + 1][j + 1]);

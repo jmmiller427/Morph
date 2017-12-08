@@ -10,10 +10,10 @@ import static java.lang.StrictMath.ceil;
 class Animation extends JPanel {
 
     private int size;
+    private Morph morph = new Morph();
     ControlPoint animatedPoints[][];
     BufferedImage srcImg = null, destImg = null;
     Triangle triangles[][][];
-    private Morph morph = new Morph();
 
     Animation(ControlPoint start[][], ControlPoint end[][], double t, int size){
 
@@ -71,12 +71,13 @@ class Animation extends JPanel {
 
         if (srcImg != null && destImg != null) {
 
-            // PUT IN TRY ???? Except IllegalArgumentException
-            g2d.setComposite(morph.ac1);
-            g2d.drawImage(srcImg, 0, 0, null);
+            try {
+                g2d.setComposite(morph.ac1);
+                g2d.drawImage(srcImg, 0, 0, null);
 
-            g2d.setComposite(morph.ac2);
-            g2d.drawImage(destImg, 0, 0, null);
+                g2d.setComposite(morph.ac2);
+                g2d.drawImage(destImg, 0, 0, null);
+            } catch (IllegalArgumentException ignored) {}
         }
     }
 

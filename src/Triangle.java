@@ -1,3 +1,4 @@
+/* CODE PROVIDED BY DR. SEALES, EDITED FOR THIS PROGRAM BY JOHN AND HARRISON*/
 import java.awt.geom.*;
 
 class Triangle
