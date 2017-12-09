@@ -4,7 +4,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
 import static java.lang.StrictMath.ceil;
 
 class Animation extends JPanel {

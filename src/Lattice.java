@@ -31,6 +31,9 @@ class Lattice extends JPanel implements MouseMotionListener, MouseListener{
         super.addMouseListener(this);
         super.addMouseMotionListener(this);
 
+        super.setFocusable(true);
+        super.requestFocusInWindow();
+
         // Initialize the points array
         points = new ControlPoint[size + 1][size + 1];
         triangles = new Triangle[size + 1][size + 1][2];
@@ -118,9 +121,7 @@ class Lattice extends JPanel implements MouseMotionListener, MouseListener{
         // When the mouse is pressed
         for (int i = 0; i < size + 1; i++) {
             for (int j = 0; j < size + 1; j++) {
-
-                // If the point is in the start lattice, get the i and j value of the point
-                if (points[i][j].contains(e.getPoint())) {
+                if (points[i][j].contains(e.getPoint())){
                     draggingControlPoint = true;
 
                     pointI = i;
@@ -148,18 +149,49 @@ class Lattice extends JPanel implements MouseMotionListener, MouseListener{
     @Override
     public void mouseDragged(MouseEvent e) {
 
+        // Create polygon to constrain points
+        Polygon poly;
+
         // When the mouse is dragged, get the source for which panel it was in
         int CPx, CPy;
 
-        // If the end lattice is being dragged
-        if (draggingControlPoint){
-            CPx = e.getX();
-            CPy = e.getY();
 
-            // Draw and create a new control point with the new x and y value calculated
-            controlPoint = new ControlPoint(CPx, CPy);
-            points[pointI][pointJ] = controlPoint;
-        }
+        try {
+            // If the end lattice is being dragged
+            if (draggingControlPoint) {
+                CPx = e.getX();
+                CPy = e.getY();
+
+                // Arrays for polygon points
+                int[] xArray = new int[6];
+                int[] yArray = new int[6];
+
+                // X-Points to restrain within
+                xArray[0] = (int) points[pointI + 1][pointJ].x;
+                xArray[1] = (int) points[pointI + 1][pointJ + 1].x;
+                xArray[2] = (int) points[pointI][pointJ + 1].x;
+                xArray[3] = (int) points[pointI - 1][pointJ].x;
+                xArray[4] = (int) points[pointI - 1][pointJ - 1].x;
+                xArray[5] = (int) points[pointI][pointJ - 1].x;
+
+                // Y-Points to restrain within
+                yArray[0] = (int) points[pointI + 1][pointJ].y;
+                yArray[1] = (int) points[pointI + 1][pointJ + 1].y;
+                yArray[2] = (int) points[pointI][pointJ + 1].y;
+                yArray[3] = (int) points[pointI - 1][pointJ].y;
+                yArray[4] = (int) points[pointI - 1][pointJ - 1].y;
+                yArray[5] = (int) points[pointI][pointJ - 1].y;
+
+                poly = new Polygon(xArray, yArray, 6);
+
+                if (poly.contains(e.getPoint())) {
+
+                    // Draw and create a new control point with the new x and y value calculated
+                    controlPoint = new ControlPoint(CPx, CPy);
+                    points[pointI][pointJ] = controlPoint;
+                }
+            }
+        } catch (ArrayIndexOutOfBoundsException ignored) {}
 
         // Repaint the panel
         repaint();

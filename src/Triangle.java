@@ -1,9 +1,7 @@
 /* CODE PROVIDED BY DR. SEALES, EDITED FOR THIS PROGRAM BY JOHN AND HARRISON*/
 import java.awt.geom.*;
 
-class Triangle
-{
-
+class Triangle {
     private Ellipse2D.Double[] tri;
 
     Triangle(ControlPoint x, ControlPoint y, ControlPoint z) {

@@ -3,8 +3,7 @@ import java.awt.image.*;
 import java.awt.*;
 import java.awt.geom.*;
 
-class MorphTools
-{
+class MorphTools {
 
     MorphTools() {}
 
