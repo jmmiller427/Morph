@@ -4,14 +4,10 @@
  * Project: Morph
  */
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
 public class Morph extends JFrame implements ActionListener{
 
@@ -23,7 +19,6 @@ public class Morph extends JFrame implements ActionListener{
     private Timer animateTimer;
     private JFileChooser file1, file2;
     static AlphaComposite ac1, ac2;
-    private int num = 0;
     private float startBrightness = 1, endBrightness = 1;
     private double t = 0;
     private int size;
@@ -302,9 +297,6 @@ public class Morph extends JFrame implements ActionListener{
             // Repaint the Panel
             animate.revalidate();
             animate.repaint();
-
-            num++;
-            makeMP4(num);
         };
 
         // Create timer and start it
@@ -314,20 +306,8 @@ public class Morph extends JFrame implements ActionListener{
 
         // Create animation frame
         animateFrame.add(animate);
-        animateFrame.setSize(endLattice.img.getWidth() + 10, endLattice.img.getHeight() + 10);
+        animateFrame.setSize(endLattice.img.getWidth(), endLattice.img.getHeight());
         animateFrame.setVisible(true);
-    }
-
-    private void makeMP4(int num){
-
-        // Create an image of the morphing window
-        BufferedImage combined = (BufferedImage)createImage(animate.srcImg.getWidth(), animate.srcImg.getHeight());
-        animate.paint(combined.getGraphics());
-        try{
-            // Write this new combined image to a file, each frame will be a new picture
-            File file = new File("image" + num + ".jpeg");
-            ImageIO.write(combined, "jpeg", file);
-        }catch(IOException ignored) {}
     }
 
     public static void main(String args[]){
